@@ -1,5 +1,29 @@
-<!-- 批量添加表单 -->
-<form @submit.prevent="addMultiple">
-<input type="text" v-model="newModel" placeholder="型号（逗号分隔）">
-<button>批量创建</button>
-</form>
+// 实时加载数据 
+function loadMice() {
+  const container = document.getElementById('mouseList');
+  container.innerHTML = '';
+  
+  for(let i=0; i<localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key.startsWith('MS-')){
+      const mouse = JSON.parse(localStorage.getItem(key));
+      
+      const statusColor = {
+        normal: '#4CAF50',
+        charging: '#FFC107',
+        lost: '#F44336',
+        returned: '#2196F3'
+      };
+ 
+      container.innerHTML += `
+        <div class="mouse-card" onclick="location.href='detail.html?id=${mouse.id}'">
+          <h3>${mouse.id}</h3>
+          <p>型号: ${mouse.model}</p >
+          <p>状态: <span style="background:${statusColor[mouse.status]}">${mouse.status}</span></p >
+          <p>出借时间: ${mouse.lendTime || '未出借'}</p >
+          <p>押物: ${mouse.deposit ? '✓' : '✗'}</p >
+        </div>
+      `;
+    }
+  }
+}
