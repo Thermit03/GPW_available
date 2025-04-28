@@ -1,13 +1,13 @@
-let mice = JSON.parse(localStorage.getItem('mice')) || [];
-let timers = [];
+let mice = JSON.parse(localStorage.getItem('mice')) || []; // 从 Local Storage 获取数据
+let timers = []; // 用于存储计时器
 
 function renderTable() {
     const tableBody = document.querySelector('#mouse-table tbody');
-    tableBody.innerHTML = '';
+    tableBody.innerHTML = ''; // 清空表格
 
     mice.forEach((mouse, index) => {
-        const usageTimeClass = mouse.borrowedDuration >= 50 ? 'red' : '';
         const row = document.createElement('tr');
+        const usageTimeClass = mouse.borrowedDuration >= 50 ? 'red' : ''; // 超过 50 小时标红
 
         row.innerHTML = `
             <td>${mouse.model}</td>
@@ -21,7 +21,7 @@ function renderTable() {
                 </select>
                 <input type="text" value="${mouse.details || ''}" placeholder="详情备注" onchange="updateMouseDetails(${index}, this.value)">
             </td>
-            <td>${mouse.borrowTime || '---'}</td>
+            <td>${mouse.borrowTime}</td>
             <td class="${usageTimeClass}">${mouse.borrowedDuration.toFixed(2)} 小时</td>
             <td><input type="text" value="${mouse.remarks}" onchange="updateMouseRemarks(${index}, this.value)" placeholder="备注"></td>
             <td>
@@ -34,24 +34,20 @@ function renderTable() {
         tableBody.appendChild(row);
     });
 
-    localStorage.setItem('mice', JSON.stringify(mice));
+    localStorage.setItem('mice', JSON.stringify(mice)); // 将数据保存到 Local Storage
 }
 
 function addMouse() {
     const start = parseInt(prompt("请输入起始鼠标序号:"));
     const end = parseInt(prompt("请输入结束鼠标序号:"));
-    
-    if (isNaN(start) || isNaN(end) || start > end) {
-        alert("请输入有效的序号范围！");
-        return;
-    }
+    const borrowTime = new Date().toLocaleString(); // 获取当前时间
 
     for (let i = start; i <= end; i++) {
         mice.push({
             model: `鼠标${i}`,
-            status: '归还',
+            status: '归还', // 默认状态为归还
             borrowTime: '',
-            borrowedDuration: 0,
+            borrowedDuration: 0, // 初始化借出时长
             remarks: '',
             details: '',
             deposit: false
@@ -61,8 +57,124 @@ function addMouse() {
     renderTable();
 }
 
-// 其他函数...
+function updateMouseStatus(index, status) {
+    mice[index].status = status;
 
+    if (status === '充电') {
+        clearInterval(timers[index]); // 停止计时
+        mice[index].borrowedDuration = 0; // 清零累计使用时间
+    } else if (status === '正常出借') {
+        mice[index].borrowTime = new Date().toLocaleString(); // 更新出借时间
+        startTimer(index); // 开始计时
+    } else if (status === '归还') {
+        clearInterval(timers[index]); // 停止计时
+        mice[index].borrowTime = ''; // 清空出借时间
+    }
+
+    renderTable();
+}
+
+function startTimer(index) {
+    if (timers[index]) {
+        clearInterval(timers[index]); // 清除已有计时器
+    }
+
+    timers[index] = setInterval(() => {
+        mice[index].borrowedDuration += 0.01667; // 每分钟增加 1/60 小时
+        if (mice[index].borrowedDuration >= 50) {
+            renderTable(); // 更新表格以显示标红
+        }
+    }, 1000 * 60); // 每分钟更新一次
+}
+
+function updateMouseDetails(index, details) {
+    mice[index].details = details;
+    renderTable();
+}
+
+function updateMouseRemarks(index, remarks) {
+    mice[index].remarks = remarks;
+    renderTable();
+}
+
+function updateDeposit(index, deposit) {
+    mice[index].deposit = deposit === '是';
+    renderTable();
+}
+
+// 清空所有鼠标数据
+function clearMice() {
+    if (confirm('确定要清空所有鼠标数据吗？')) {
+        mice = [];
+        renderTable();
+    }
+}
+
+// 修改某个鼠标的某项数据
+function modifyMouseData() {
+    const index = parseInt(prompt("请输入要修改的鼠标序号:")) - 1; // 用户输入的序号减一
+    if (index < 0 || index >= mice.length) {
+        alert("鼠标序号无效");
+        return;
+    }
+    
+    const field = prompt("请输入要修改的字段 (status/details/remarks/deposit):");
+    if (field === 'status') {
+        const newStatus = prompt("请输入新的状态 (归还/正常出借/充电/遗失/归还吧台):");
+        if (['归还', '正常出借', '充电', '遗失', '归还吧台'].includes(newStatus)) {
+            updateMouseStatus(index, newStatus);
+        } else {
+            alert("状态无效");
+        }
+    } else if (field === 'details') {
+        const newDetails = prompt("请输入新的详情备注:");
+        updateMouseDetails(index, newDetails);
+    } else if (field === 'remarks') {
+        const newRemarks = prompt("请输入新的备注:");
+        updateMouseRemarks(index, newRemarks);
+    } else if (field === 'deposit') {
+        const newDeposit = prompt("请输入新的押金状态 (是/否):");
+        updateDeposit(index, newDeposit);
+    } else {
+        alert("字段无效");
+    }
+}
+
+// 导出数据为 JSON 文件
+function exportData() {
+    const dataStr = JSON.stringify(mice);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mice_data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// 导入数据
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                mice = JSON.parse(event.target.result);
+                renderTable();
+            } catch (err) {
+                alert('导入数据格式错误');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// 添加导入和导出按钮
 document.addEventListener('DOMContentLoaded', () => {
     const exportButton = document.createElement('button');
     exportButton.textContent = '导出数据';
@@ -84,10 +196,5 @@ document.addEventListener('DOMContentLoaded', () => {
     modifyButton.onclick = modifyMouseData;
     document.body.appendChild(modifyButton);
 
-    const addButton = document.createElement('button');
-    addButton.textContent = '添加鼠标';
-    addButton.onclick = addMouse;
-    document.body.appendChild(addButton);
-
-    renderTable();
+    renderTable(); // 初始渲染
 });
