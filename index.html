@@ -1,29 +1,32 @@
-// 实时加载数据 
-function loadMice() {
-  const container = document.getElementById('mouseList');
-  container.innerHTML = '';
-  
-  for(let i=0; i<localStorage.length; i++){
-    const key = localStorage.key(i);
-    if(key.startsWith('MS-')){
-      const mouse = JSON.parse(localStorage.getItem(key));
-      
-      const statusColor = {
-        normal: '#4CAF50',
-        charging: '#FFC107',
-        lost: '#F44336',
-        returned: '#2196F3'
-      };
- 
-      container.innerHTML += `
-        <div class="mouse-card" onclick="location.href='detail.html?id=${mouse.id}'">
-          <h3>${mouse.id}</h3>
-          <p>型号: ${mouse.model}</p >
-          <p>状态: <span style="background:${statusColor[mouse.status]}">${mouse.status}</span></p >
-          <p>出借时间: ${mouse.lendTime || '未出借'}</p >
-          <p>押物: ${mouse.deposit ? '✓' : '✗'}</p >
-        </div>
-      `;
-    }
-  }
-}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鼠标管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>鼠标管理系统</h1>
+    <div id="mouse-overview">
+        <h2>鼠标总览</h2>
+        <table id="mouse-table">
+            <thead>
+                <tr>
+                    <th>鼠标型号</th>
+                    <th>状态</th>
+                    <th>出借时间</th>
+                    <th>已出借时间</th>
+                    <th>备注</th>
+                    <th>押物</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 鼠标数据将被动态插入这里 -->
+            </tbody>
+        </table>
+        <button onclick="addMouse()">添加鼠标</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
