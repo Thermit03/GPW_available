@@ -1,13 +1,52 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>鼠标管理系统</title>
-    <link rel="stylesheet" href="styles.css"> <!-- 如果有 CSS 文件 -->
-    <script src="script.js" defer></script> <!-- 引入 JavaScript 文件 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .red {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <!-- 这里是主页面内容 -->
+    <h1>鼠标管理系统</h1>
+    <button onclick="addMouse()">批量添加鼠标</button>
+    <button onclick="exportData()">导出数据</button>
+    <button onclick="importData()">导入数据</button>
+    <table id="mouse-table">
+        <thead>
+            <tr>
+                <th>鼠标序号</th>
+                <th>状态</th>
+                <th>出借时间</th>
+                <th>已出借时间</th>
+                <th>备注</th>
+                <th>押物</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script src="script.js"></script>
 </body>
 </html>
