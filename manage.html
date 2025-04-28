@@ -1,1 +1,31 @@
-
+<!-- 批量创建表单 -->
+<form onsubmit="batchCreate(event)">
+  <input type="number" id="baseNumber" placeholder="起始编号" required>
+  <input type="text" id="model" placeholder="型号名称" required>
+  <input type="number" id="count" placeholder="创建数量" required>
+  <button type="submit">批量生成</button>
+</form>
+ 
+<script>
+function batchCreate(e) {
+  e.preventDefault();
+  const baseNum = document.getElementById('baseNumber').value;
+  const model = document.getElementById('model').value;
+  const count = document.getElementById('count').value;
+ 
+  for(let i=0; i<count; i++){
+    const newMouse = {
+      id: `MS-${String(baseNum).padStart(3,'0')}`,
+      model: model,
+      status: "normal",
+      lendTime: "",
+      deposit: false,
+      depositNote: "",
+      note: ""
+    };
+    // 存储到localStorage 
+    localStorage.setItem(newMouse.id, JSON.stringify(newMouse));
+    baseNum++;
+  }
+}
+</script>
