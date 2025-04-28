@@ -195,5 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
     modifyButton.onclick = modifyMouseData;
     document.body.appendChild(modifyButton);
 
+    // 添加“添加鼠标”按钮
+    const addButton = document.createElement('button');
+    addButton.textContent = '添加鼠标';
+    addButton.onclick = addMouse; // 绑定添加鼠标函数
+    document.body.appendChild(addButton);
+
     renderTable(); // 初始渲染
 });
