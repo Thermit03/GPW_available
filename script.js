@@ -6,7 +6,6 @@ function renderTable() {
     tableBody.innerHTML = ''; // 清空表格
 
     mice.forEach((mouse, index) => {
-        const row = document.createElement('tr');
         const usageTimeClass = mouse.borrowedDuration >= 50 ? 'red' : ''; // 超过 50 小时标红
 
         row.innerHTML = `
@@ -21,8 +20,8 @@ function renderTable() {
                 </select>
                 <input type="text" value="${mouse.details || ''}" placeholder="详情备注" onchange="updateMouseDetails(${index}, this.value)">
             </td>
-            <td>${mouse.borrowTime}</td>
-            <td class="${usageTimeClass}">${mouse.borrowedDuration} 小时</td>
+            <td>${mouse.borrowTime || '---'}</td>
+            <td class="${usageTimeClass}">${mouse.borrowedDuration.toFixed(2)} 小时</td>
             <td><input type="text" value="${mouse.remarks}" onchange="updateMouseRemarks(${index}, this.value)" placeholder="备注"></td>
             <td>
                 <select onchange="updateDeposit(${index}, this.value)">
@@ -40,8 +39,7 @@ function renderTable() {
 function addMouse() {
     const start = parseInt(prompt("请输入起始鼠标序号:"));
     const end = parseInt(prompt("请输入结束鼠标序号:"));
-    const borrowTime = new Date().toLocaleString(); // 获取当前时间
-
+    
     for (let i = start; i <= end; i++) {
         mice.push({
             model: `鼠标${i}`,
@@ -68,6 +66,7 @@ function updateMouseStatus(index, status) {
         startTimer(index); // 开始计时
     } else if (status === '归还') {
         clearInterval(timers[index]); // 停止计时
+        mice[index].borrowTime = '---'; // 设置为“---”
     }
 
     renderTable();
@@ -99,6 +98,39 @@ function updateMouseRemarks(index, remarks) {
 function updateDeposit(index, deposit) {
     mice[index].deposit = deposit === '是';
     renderTable();
+}
+
+// 开发菜单功能
+function clearMice() {
+    if (confirm("确定要清空所有鼠标数据吗？")) {
+        mice = [];
+        localStorage.removeItem('mice');
+        renderTable();
+    }
+}
+
+function modifyMouseData() {
+    const index = parseInt(prompt("请输入要修改的鼠标序号:")) - 1;
+    if (index < 0 || index >= mice.length) {
+        alert("无效的鼠标序号！");
+        return;
+    }
+
+    const property = prompt("请输入要修改的属性（status/details/remarks/deposit）：");
+    const newValue = prompt("请输入新的值：");
+
+    if (property === 'status') {
+        updateMouseStatus(index, newValue);
+    } else if (property === 'details') {
+        updateMouseDetails(index, newValue);
+    } else if (property === 'remarks') {
+        updateMouseRemarks(index, newValue);
+    } else if (property === 'deposit') {
+        mice[index].deposit = newValue === '是';
+        renderTable();
+    } else {
+        alert("无效的属性！");
+    }
 }
 
 // 导出数据为 JSON 文件
@@ -146,6 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
     importButton.textContent = '导入数据';
     importButton.onclick = importData;
     document.body.appendChild(importButton);
+
+    const clearButton = document.createElement('button');
+    clearButton.textContent = '清空鼠标数据';
+    clearButton.onclick = clearMice;
+    document.body.appendChild(clearButton);
+
+    const modifyButton = document.createElement('button');
+    modifyButton.textContent = '修改鼠标数据';
+    modifyButton.onclick = modifyMouseData;
+    document.body.appendChild(modifyButton);
 
     renderTable(); // 初始渲染
 });
