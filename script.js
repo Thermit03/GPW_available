@@ -1,4 +1,5 @@
 let mice = JSON.parse(localStorage.getItem('mice')) || []; // 从 Local Storage 获取数据
+let timers = []; // 用于存储计时器
 
 function renderTable() {
     const tableBody = document.querySelector('#mouse-table tbody');
@@ -6,19 +7,22 @@ function renderTable() {
 
     mice.forEach((mouse, index) => {
         const row = document.createElement('tr');
+        const usageTimeClass = mouse.borrowedDuration >= 50 ? 'red' : ''; // 超过 50 小时标红
+
         row.innerHTML = `
-            <td>${index + 1}</td> <!-- 鼠标序号 -->
+            <td>${mouse.model}</td>
             <td>
                 <select onchange="updateMouseStatus(${index}, this.value)">
+                    <option value="归还" ${mouse.status === '归还' ? 'selected' : ''}>归还</option>
                     <option value="正常出借" ${mouse.status === '正常出借' ? 'selected' : ''}>正常出借</option>
                     <option value="充电" ${mouse.status === '充电' ? 'selected' : ''}>充电</option>
                     <option value="遗失" ${mouse.status === '遗失' ? 'selected' : ''}>遗失</option>
                     <option value="归还吧台" ${mouse.status === '归还吧台' ? 'selected' : ''}>归还吧台</option>
-                    <option value="上次充电后累计出借时间" ${mouse.status === '上次充电后累计出借时间' ? 'selected' : ''}>上次充电后累计出借时间</option>
                 </select>
+                <input type="text" value="${mouse.details || ''}" placeholder="详情备注" onchange="updateMouseDetails(${index}, this.value)">
             </td>
             <td>${mouse.borrowTime}</td>
-            <td>${mouse.borrowedDuration}</td>
+            <td class="${usageTimeClass}">${mouse.borrowedDuration} 小时</td>
             <td><input type="text" value="${mouse.remarks}" onchange="updateMouseRemarks(${index}, this.value)" placeholder="备注"></td>
             <td>
                 <select onchange="updateDeposit(${index}, this.value)">
@@ -41,10 +45,11 @@ function addMouse() {
     for (let i = start; i <= end; i++) {
         mice.push({
             model: `鼠标${i}`,
-            status: '正常出借',
-            borrowTime: borrowTime,
-            borrowedDuration: '0', // 初始化借出时长
+            status: '归还', // 默认状态为归还
+            borrowTime: '',
+            borrowedDuration: 0, // 初始化借出时长
             remarks: '',
+            details: '',
             deposit: false
         });
     }
@@ -54,6 +59,35 @@ function addMouse() {
 
 function updateMouseStatus(index, status) {
     mice[index].status = status;
+
+    if (status === '充电') {
+        clearInterval(timers[index]); // 停止计时
+        mice[index].borrowedDuration = 0; // 清零累计使用时间
+    } else if (status === '正常出借') {
+        mice[index].borrowTime = new Date().toLocaleString(); // 更新出借时间
+        startTimer(index); // 开始计时
+    } else if (status === '归还') {
+        clearInterval(timers[index]); // 停止计时
+    }
+
+    renderTable();
+}
+
+function startTimer(index) {
+    if (timers[index]) {
+        clearInterval(timers[index]); // 清除已有计时器
+    }
+
+    timers[index] = setInterval(() => {
+        mice[index].borrowedDuration += 0.01667; // 每分钟增加 1/60 小时
+        if (mice[index].borrowedDuration >= 50) {
+            renderTable(); // 更新表格以显示标红
+        }
+    }, 1000 * 60); // 每分钟更新一次
+}
+
+function updateMouseDetails(index, details) {
+    mice[index].details = details;
     renderTable();
 }
 
