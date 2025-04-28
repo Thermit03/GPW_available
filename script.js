@@ -7,29 +7,63 @@ function renderTable() {
     mice.forEach((mouse, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${mouse.model}</td>
-            <td>${mouse.status}</td>
+            <td>${index + 1}</td> <!-- 鼠标序号 -->
+            <td>
+                <select onchange="updateMouseStatus(${index}, this.value)">
+                    <option value="正常出借" ${mouse.status === '正常出借' ? 'selected' : ''}>正常出借</option>
+                    <option value="充电" ${mouse.status === '充电' ? 'selected' : ''}>充电</option>
+                    <option value="遗失" ${mouse.status === '遗失' ? 'selected' : ''}>遗失</option>
+                    <option value="归还吧台" ${mouse.status === '归还吧台' ? 'selected' : ''}>归还吧台</option>
+                    <option value="上次充电后累计出借时间" ${mouse.status === '上次充电后累计出借时间' ? 'selected' : ''}>上次充电后累计出借时间</option>
+                </select>
+            </td>
             <td>${mouse.borrowTime}</td>
             <td>${mouse.borrowedDuration}</td>
-            <td>${mouse.remarks}</td>
-            <td>${mouse.deposit ? '是' : '否'}</td>
+            <td><input type="text" value="${mouse.remarks}" onchange="updateMouseRemarks(${index}, this.value)" placeholder="备注"></td>
+            <td>
+                <select onchange="updateDeposit(${index}, this.value)">
+                    <option value="是" ${mouse.deposit ? 'selected' : ''}>是</option>
+                    <option value="否" ${!mouse.deposit ? 'selected' : ''}>否</option>
+                </select>
+            </td>
         `;
         tableBody.appendChild(row);
     });
 
-    // 将数据保存到 Local Storage
-    localStorage.setItem('mice', JSON.stringify(mice));
+    localStorage.setItem('mice', JSON.stringify(mice)); // 将数据保存到 Local Storage
 }
 
 function addMouse() {
-    const model = prompt("请输入鼠标型号:");
-    const status = prompt("请输入鼠标状态:");
-    const borrowTime = prompt("请输入出借时间:");
-    const borrowedDuration = prompt("请输入已出借时间:");
-    const remarks = prompt("请输入备注:");
-    const deposit = confirm("是否押物?");
+    const start = parseInt(prompt("请输入起始鼠标序号:"));
+    const end = parseInt(prompt("请输入结束鼠标序号:"));
+    const borrowTime = new Date().toLocaleString(); // 获取当前时间
 
-    mice.push({ model, status, borrowTime, borrowedDuration, remarks, deposit });
+    for (let i = start; i <= end; i++) {
+        mice.push({
+            model: `鼠标${i}`,
+            status: '正常出借',
+            borrowTime: borrowTime,
+            borrowedDuration: '0', // 初始化借出时长
+            remarks: '',
+            deposit: false
+        });
+    }
+
+    renderTable();
+}
+
+function updateMouseStatus(index, status) {
+    mice[index].status = status;
+    renderTable();
+}
+
+function updateMouseRemarks(index, remarks) {
+    mice[index].remarks = remarks;
+    renderTable();
+}
+
+function updateDeposit(index, deposit) {
+    mice[index].deposit = deposit === '是';
     renderTable();
 }
 
