@@ -2,25 +2,20 @@ let mice = JSON.parse(localStorage.getItem('mice')) || [];
 let timer; // 用于计时器的变量
 
 function addMouse() {
-    const start = parseInt(prompt("请输入起始鼠标序号:"));
-    const end = parseInt(prompt("请输入结束鼠标序号:"));
-    
-    if (isNaN(start) || isNaN(end) || start > end) {
-        alert("请输入有效的序号范围！");
+    const model = prompt("请输入鼠标型号:");
+    if (!model) {
+        alert("型号不能为空！");
         return;
     }
 
-    for (let i = start; i <= end; i++) {
-        mice.push({
-            model: `鼠标${i}`,
-            status: '归还', // 默认状态为归还
-            borrowTime: '',
-            borrowedDuration: 0, // 初始化借出时长
-            remarks: '',
-            details: '',
-            deposit: false
-        });
-    }
+    mice.push({
+        model: model,
+        status: '归还', // 默认状态为归还
+        borrowTime: '',
+        borrowedDuration: 0, // 初始化借出时长
+        remarks: '',
+        deposit: false
+    });
 
     saveMice();
     renderTable();
@@ -72,6 +67,21 @@ function startTimer() {
 function stopTimer() {
     clearInterval(timer);
     timer = null;
+}
+
+// 充电时清零累计使用时间
+function chargeMouse(index) {
+    mice[index].borrowedDuration = 0; // 清零累计使用时间
+    saveMice();
+    renderTable();
+}
+
+// 归还鼠标时暂停计时
+function returnMouse(index) {
+    mice[index].status = '归还'; // 设置状态为归还
+    stopTimer(); // 停止计时器
+    saveMice();
+    renderTable();
 }
 
 // 在页面加载时恢复数据
