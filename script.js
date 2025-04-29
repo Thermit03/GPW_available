@@ -14,10 +14,10 @@ function renderTable() {
             <td>
                 <select onchange="updateMouseStatus(${index}, this.value)">
                     <option value="归还" ${mouse.status === '归还' ? 'selected' : ''}>归还</option>
-                    <option value="正常出借" ${mouse.status === '正常出借' ? 'selected' : ''}>正常出借</option>
+                    <option value="借出" ${mouse.status === '借出' ? 'selected' : ''}>借出</option>
                     <option value="充电" ${mouse.status === '充电' ? 'selected' : ''}>充电</option>
                     <option value="遗失" ${mouse.status === '遗失' ? 'selected' : ''}>遗失</option>
-                    <option value="归还吧台" ${mouse.status === '归还吧台' ? 'selected' : ''}>归还吧台</option>
+                    <option value="详见备注" ${mouse.status === '详见备注' ? 'selected' : ''}>详见备注</option>
                 </select>
             </td>
             <td>${mouse.borrowTime}</td>
